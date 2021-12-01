@@ -1,6 +1,7 @@
 const stackTraceParser = require("stacktrace-parser");
 const { SourceMapConsumer } = require("source-map");
 const { URL } = require("url");
+const allowCors = require("./allowCors");
 
 const mapStacktrace = async (str, sourceMapDir) => {
   const fetch = await import("node-fetch").then(({ default: fetch }) => fetch);
@@ -47,7 +48,7 @@ const mapStacktrace = async (str, sourceMapDir) => {
   }
 };
 
-module.exports = (req, res) => {
+module.exports = allowCors((req, res) => {
   const { stacktrace } = req?.body ?? {};
   if (!stacktrace) {
     res.writeHead(200);
@@ -63,7 +64,7 @@ module.exports = (req, res) => {
       res.writeHead(500);
       res.end(JSON.stringify(e));
     });
-};
+});
 
 if (
   typeof require !== "undefined" &&
