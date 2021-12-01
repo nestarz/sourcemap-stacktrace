@@ -48,7 +48,11 @@ const mapStacktrace = async (str, sourceMapDir) => {
 };
 
 module.exports = (req, res) => {
-  const { stacktrace } = req.body;
+  const { stacktrace } = req?.body ?? {};
+  if (!stacktrace) {
+    res.writeHead(200);
+    res.end("OK");
+  }
 
   mapStacktrace(stacktrace)
     .then((data) => {
@@ -68,8 +72,8 @@ if (
 ) {
   mapStacktrace(
     `Error: Request failed with status code 500
-  at dU (https://staging.ariane.app/assets/vendor.b59915a5.js:206:132232)
-  at SU (https://staging.ariane.app/assets/vendor.b59915a5.js:206:133900)
-  at XMLHttpRequest.PU.i.onreadystatechange (https://staging.ariane.app/assets/vendor.b59915a5.js:206:135064)`
+  at dU (https://-/assets/vendor.b59915a5.js:206:132232)
+  at SU (https://-/assets/vendor.b59915a5.js:206:133900)
+  at XMLHttpRequest.PU.i.onreadystatechange (https://-/assets/vendor.b59915a5.js:206:135064)`
   ).then(console.log);
 }
