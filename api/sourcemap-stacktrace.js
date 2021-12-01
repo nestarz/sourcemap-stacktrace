@@ -3,7 +3,7 @@ const { SourceMapConsumer } = require("source-map");
 const allowCors = require("./allowCors");
 const { tryc } = require("./utils");
 
-const getSourceMap = ({ file }) => {
+const getSourceMap = (file) => {
   const mapPath = `${file}.map`;
   return import("node-fetch").then(({ default: fetch }) =>
     fetch(mapPath)
@@ -16,9 +16,18 @@ const getSourceMap = ({ file }) => {
 
 const mapStacktrace = async (str) => {
   const stack = stackTraceParser.parse(str);
-  const mapContent = await Promise.all(stack.map(getSourceMap));
+  const files = [...new Set(stack.map(({ file }) => file))];
+
+  const mapContent = Object.fromEntries(
+    (await Promise.all(files.map(getSourceMap))).map((map, i) => [
+      files[i],
+      map,
+    ])
+  );
   const smcs = await Promise.all(
-    mapContent.map((d) => new SourceMapConsumer(d))
+    stack
+      .map(({ file }) => mapContent[file])
+      .map((map) => new SourceMapConsumer(map))
   );
 
   if (stack.length === 0) throw new Error("No stack found");
